@@ -68,6 +68,9 @@ firebase-debug.log
 # Local runtime / reports
 KOSH_SAFE_REPORT.txt
 Process.local.md
+Process.md
+**/build_output*.txt
+**/full_log*.txt
 
 # Legacy and private operational assets
 legacy/
