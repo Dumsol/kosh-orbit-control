@@ -1,4 +1,4 @@
-FROM bitnami/suitecrm:latest
+FROM bitnamilegacy/suitecrm:8.8.1-debian-12-r3
 
 USER root
 RUN mkdir -p /opt/kosh

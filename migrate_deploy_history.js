@@ -13,8 +13,12 @@ CREATE TABLE IF NOT EXISTS deploy_history (
 `;
 
 async function run() {
+  const connectionString = process.env.DB_LOGS_URL;
+  if (!connectionString) {
+    throw new Error("DB_LOGS_URL is required. Configure via Secret Manager/KOSH_CONFIG.");
+  }
   const client = new Client({
-    connectionString: "postgresql://logs_user:vPHIXbAFy7hifp8D6E4dVXIx7ZESYEbU@127.0.0.1:5432/logs_db?sslmode=require"
+    connectionString
   });
   try {
     await client.connect();

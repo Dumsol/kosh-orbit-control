@@ -42,12 +42,19 @@ logs/
 !.env.example
 *.env
 *.env.*
-!.env.example
+*.env.local
+*.env.production
+*.env.staging
+*.local
+.envrc
 kosh.env
 kosh-secrets.env
 master.env
 kosh.json
 kosh_secrets.json
+*secrets*.env
+*secret*.env
+secrets.*
 
 # Cloud / credentials
 *.pem

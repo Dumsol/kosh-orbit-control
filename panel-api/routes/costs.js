@@ -31,11 +31,10 @@ const getAccessToken = async () => {
   if (process.env.GCP_ACCESS_TOKEN) return process.env.GCP_ACCESS_TOKEN
 
   const metadataUrl = 'http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token'
-  const resp = await fetch(metadataUrl, {
+  const resp = await fetchWithTimeout(metadataUrl, {
     method: 'GET',
     headers: { 'Metadata-Flavor': 'Google' },
-    timeout: 4000,
-  })
+  }, 4000)
 
   if (!resp.ok) {
     const txt = await resp.text()
@@ -50,17 +49,26 @@ const getAccessToken = async () => {
 const getRunServicePath = ({ projectId, region, service }) =>
   `https://run.googleapis.com/v2/projects/${projectId}/locations/${region}/services/${service}`
 
+const fetchWithTimeout = async (url, options = {}, timeoutMs = 15000) => {
+  const controller = new AbortController()
+  const timer = setTimeout(() => controller.abort(), timeoutMs)
+  try {
+    return await fetch(url, { ...options, signal: controller.signal })
+  } finally {
+    clearTimeout(timer)
+  }
+}
+
 const gcpRequest = async ({ url, method = 'GET', body }) => {
   const token = await getAccessToken()
-  const resp = await fetch(url, {
+  const resp = await fetchWithTimeout(url, {
     method,
     headers: {
       Authorization: `Bearer ${token}`,
       'Content-Type': 'application/json',
     },
-    body: body ? JSON.stringify(body) : undefined,
-    timeout: 15000,
-  })
+    body: body ? JSON.stringify(body) : undefined
+  }, 15000)
 
   const text = await resp.text()
   let data = null
@@ -71,6 +79,70 @@ const gcpRequest = async ({ url, method = 'GET', body }) => {
   }
 
   return data
+}
+
+const patchCloudRunService = async ({
+  projectId,
+  region,
+  service,
+  minInstances,
+  maxInstances,
+  ingress,
+}) => {
+  const serviceUrl = getRunServicePath({ projectId, region, service })
+  const before = await gcpRequest({ url: serviceUrl, method: 'GET' })
+
+  const updateMask = [
+    'template.scaling.minInstanceCount',
+    'template.scaling.maxInstanceCount',
+    'scaling.maxInstanceCount',
+    'ingress',
+  ].join(',')
+
+  const patchBody = {
+    template: {
+      scaling: {
+        minInstanceCount: minInstances,
+        maxInstanceCount: maxInstances,
+      },
+    },
+    scaling: {
+      maxInstanceCount: maxInstances,
+    },
+    ingress,
+  }
+
+  const op = await gcpRequest({
+    url: `${serviceUrl}?updateMask=${encodeURIComponent(updateMask)}`,
+    method: 'PATCH',
+    body: patchBody,
+  })
+
+  return {
+    region,
+    projectId,
+    operation: op?.name || null,
+    before: {
+      ingress: before?.ingress,
+      template: {
+        minInstanceCount: before?.template?.scaling?.minInstanceCount,
+        maxInstanceCount: before?.template?.scaling?.maxInstanceCount,
+      },
+      service: {
+        maxInstanceCount: before?.scaling?.maxInstanceCount,
+      },
+    },
+    after: {
+      ingress,
+      template: {
+        minInstanceCount: minInstances,
+        maxInstanceCount: maxInstances,
+      },
+      service: {
+        maxInstanceCount: maxInstances,
+      },
+    },
+  }
 }
 
 const upsertAction = async ({ project, service, action, reason, actor, executed, details }) => {
@@ -254,36 +326,14 @@ router.post('/pause-service', async (req, res) => {
   const pauseIngress = String(req.body.ingress || process.env.CLOUD_RUN_PAUSE_INGRESS || 'INGRESS_TRAFFIC_INTERNAL_ONLY')
 
   try {
-    const serviceUrl = getRunServicePath({ projectId, region, service })
-    const before = await gcpRequest({ url: serviceUrl, method: 'GET' })
-
-    const updateMask = ['scaling.minInstanceCount', 'scaling.maxInstanceCount', 'ingress'].join(',')
-    const patchBody = {
-      scaling: { minInstanceCount: pauseMin, maxInstanceCount: pauseMax },
-      ingress: pauseIngress,
-    }
-
-    const op = await gcpRequest({
-      url: `${serviceUrl}?updateMask=${encodeURIComponent(updateMask)}`,
-      method: 'PATCH',
-      body: patchBody,
-    })
-
-    const details = {
-      region,
+    const details = await patchCloudRunService({
       projectId,
-      operation: op?.name || null,
-      before: {
-        ingress: before?.ingress,
-        minInstanceCount: before?.scaling?.minInstanceCount,
-        maxInstanceCount: before?.scaling?.maxInstanceCount,
-      },
-      after: {
-        ingress: pauseIngress,
-        minInstanceCount: pauseMin,
-        maxInstanceCount: pauseMax,
-      },
-    }
+      region,
+      service,
+      minInstances: pauseMin,
+      maxInstances: pauseMax,
+      ingress: pauseIngress,
+    })
 
     await upsertAction({ project, service, action: 'pause', reason, actor, executed: true, details })
     res.json({ ok: true, executed: true, details })
@@ -326,33 +376,21 @@ router.post('/resume-service', async (req, res) => {
     )
 
     const previous = lastPause.rows[0]?.details?.before || {}
-    const resumeMin = toNum(req.body.minInstances, toNum(previous.minInstanceCount, 0))
-    const resumeMax = Math.max(1, toNum(req.body.maxInstances, toNum(previous.maxInstanceCount, toNum(process.env.CLOUD_RUN_RESUME_MAX, 10))))
+    const resumeMin = toNum(req.body.minInstances, toNum(previous?.template?.minInstanceCount, 0))
+    const resumeMax = Math.max(1, toNum(
+      req.body.maxInstances,
+      toNum(previous?.template?.maxInstanceCount, toNum(process.env.CLOUD_RUN_RESUME_MAX, 10))
+    ))
     const resumeIngress = String(req.body.ingress || previous.ingress || process.env.CLOUD_RUN_RESUME_INGRESS || 'INGRESS_TRAFFIC_ALL')
 
-    const serviceUrl = getRunServicePath({ projectId, region, service })
-    const updateMask = ['scaling.minInstanceCount', 'scaling.maxInstanceCount', 'ingress'].join(',')
-    const patchBody = {
-      scaling: { minInstanceCount: resumeMin, maxInstanceCount: resumeMax },
-      ingress: resumeIngress,
-    }
-
-    const op = await gcpRequest({
-      url: `${serviceUrl}?updateMask=${encodeURIComponent(updateMask)}`,
-      method: 'PATCH',
-      body: patchBody,
-    })
-
-    const details = {
-      region,
+    const details = await patchCloudRunService({
       projectId,
-      operation: op?.name || null,
-      after: {
-        ingress: resumeIngress,
-        minInstanceCount: resumeMin,
-        maxInstanceCount: resumeMax,
-      },
-    }
+      region,
+      service,
+      minInstances: resumeMin,
+      maxInstances: resumeMax,
+      ingress: resumeIngress,
+    })
 
     await upsertAction({ project, service, action: 'resume', reason, actor, executed: true, details })
     res.json({ ok: true, executed: true, details })
@@ -397,28 +435,19 @@ router.post('/enforce', async (req, res) => {
 
     const targets = Array.isArray(policy.pause_services) ? policy.pause_services : []
     const results = []
+    const projectId = getProjectId()
+    const region = getRegion()
+    if (!projectId) return res.status(503).json({ error: 'GCP project id not configured' })
+
     for (const service of targets) {
       try {
-        const fakeReq = { body: { project, service, reason: `auto-pause threshold ${usage.toFixed(2)}%` } }
-        const fakeRes = { statusCode: 200 }
-        // Reuse the same logic through direct call helper by mimicking route action.
-        // For simplicity and determinism, execute PATCH inline.
-        const projectId = getProjectId()
-        const region = getRegion()
-        const serviceUrl = getRunServicePath({ projectId, region, service })
-        const before = await gcpRequest({ url: serviceUrl, method: 'GET' })
-        const updateMask = ['scaling.minInstanceCount', 'scaling.maxInstanceCount', 'ingress'].join(',')
-        const patchBody = {
-          scaling: {
-            minInstanceCount: 0,
-            maxInstanceCount: Math.max(1, toNum(process.env.CLOUD_RUN_PAUSE_MAX, 1)),
-          },
+        const details = await patchCloudRunService({
+          projectId,
+          region,
+          service,
+          minInstances: 0,
+          maxInstances: Math.max(1, toNum(process.env.CLOUD_RUN_PAUSE_MAX, 1)),
           ingress: process.env.CLOUD_RUN_PAUSE_INGRESS || 'INGRESS_TRAFFIC_INTERNAL_ONLY',
-        }
-        const op = await gcpRequest({
-          url: `${serviceUrl}?updateMask=${encodeURIComponent(updateMask)}`,
-          method: 'PATCH',
-          body: patchBody,
         })
         await upsertAction({
           project,
@@ -427,15 +456,7 @@ router.post('/enforce', async (req, res) => {
           reason: `auto-pause threshold ${usage.toFixed(2)}%`,
           actor: 'auto-budget-enforcer',
           executed: true,
-          details: {
-            operation: op?.name || null,
-            before: {
-              ingress: before?.ingress,
-              minInstanceCount: before?.scaling?.minInstanceCount,
-              maxInstanceCount: before?.scaling?.maxInstanceCount,
-            },
-            after: patchBody,
-          },
+          details,
         })
         results.push({ service, ok: true })
       } catch (e) {
