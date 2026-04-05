@@ -1,0 +1,25 @@
+{
+    "name": "@kosh/logger",
+    "version": "1.0.0",
+    "description": "Kosh observability SDK",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "files": [
+        "dist"
+    ],
+    "scripts": {
+        "build": "tsc --module esnext"
+    },
+    "publishConfig": {
+        "access": "public"
+    },
+    "dependencies": {
+        "serialize-error": "^11.0.3"
+    },
+    "devDependencies": {
+        "@types/node": "^25.5.0",
+        "express": "^5.2.1",
+        "typescript": "^6.0.2",
+        "vue": "^3.5.31"
+    }
+}

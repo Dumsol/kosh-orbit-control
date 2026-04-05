@@ -1,0 +1,75 @@
+# OS / Editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Node / JS
+node_modules/
+**/node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.npm/
+.pnpm-store/
+
+# Build artifacts
+dist/
+**/dist/
+build/
+out/
+coverage/
+.cache/
+*.tsbuildinfo
+
+# Python / temp
+__pycache__/
+*.pyc
+*.tmp
+tmp/
+temp/
+
+# Logs
+logs/
+*.log
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+*.env
+*.env.*
+!.env.example
+kosh.env
+kosh-secrets.env
+master.env
+kosh.json
+kosh_secrets.json
+
+# Cloud / credentials
+*.pem
+*.key
+*.crt
+*.csr
+*.p12
+*.pfx
+*service-account*.json
+*credentials*.json
+*secret*.json
+**/secrets/
+
+# Firebase / GCP local config
+.firebase/
+firebase-debug.log
+
+# Local runtime / reports
+KOSH_SAFE_REPORT.txt
+Process.local.md
+
+# Legacy and private operational assets
+legacy/
+docs/
+.claude/

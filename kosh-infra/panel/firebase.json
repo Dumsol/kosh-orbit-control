@@ -1,0 +1,39 @@
+{
+  "hosting": {
+    "site": "kosh-tecnologia",
+    "public": "dist",
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+    "rewrites": [
+      {
+        "source": "/api/**",
+        "run": { "serviceId": "panel-api", "region": "southamerica-east1" }
+      },
+      {
+        "source": "/ingest/**",
+        "run": { "serviceId": "ingest-api", "region": "southamerica-east1" }
+      },
+      {
+        "source": "/webhooks/**",
+        "run": { "serviceId": "webhooks", "region": "southamerica-east1" }
+      },
+      {
+        "source": "/support/**",
+        "run": { "serviceId": "peppermint", "region": "southamerica-east1" }
+      },
+      {
+        "source": "/integrations/**",
+        "run": { "serviceId": "integration-bus", "region": "southamerica-east1" }
+      },
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ],
+    "headers": [
+      {
+        "source": "/api/**",
+        "headers": [{ "key": "Cache-Control", "value": "no-cache, no-store" }]
+      }
+    ]
+  }
+}

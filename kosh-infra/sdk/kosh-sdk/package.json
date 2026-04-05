@@ -1,0 +1,38 @@
+{
+  "name": "@kosh/sdk",
+  "version": "1.0.0",
+  "description": "Unified Kosh SDK — CLI, logger, integration, email, telegram for all projects",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "kosh": "bin/kosh.js"
+  },
+  "files": [
+    "dist",
+    "bin"
+  ],
+  "scripts": {
+    "build": "tsc --module esnext",
+    "dev": "tsc --watch --module esnext"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@kosh/logger": "file:../kosh-logger",
+    "axios": "^1.7.7",
+    "chalk": "^5.3.0",
+    "commander": "^11.1.0",
+    "dotenv": "^16.3.1",
+    "inquirer": "^8.2.6"
+  },
+  "devDependencies": {
+    "@nuxt/schema": "^4.4.2",
+    "@types/node": "^25.5.0",
+    "typescript": "^6.0.2",
+    "vue": "^3.5.31"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}

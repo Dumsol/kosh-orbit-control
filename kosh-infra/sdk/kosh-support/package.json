@@ -1,0 +1,30 @@
+{
+  "name": "@kosh/support",
+  "version": "1.0.0",
+  "description": "Kosh support widget — floating button + ticket modal + support page",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc --module esnext",
+    "dev": "tsc --watch --module esnext"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "vue": "^3.5.31"
+  },
+  "devDependencies": {
+    "@types/node": "^25.5.0",
+    "typescript": "^6.0.2"
+  },
+  "peerDependencies": {
+    "vue": "^3.0.0"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}

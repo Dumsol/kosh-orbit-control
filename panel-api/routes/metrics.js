@@ -1,0 +1,5 @@
+'use strict'; const express = require('express'), si = require('systeminformation'), { exec } = require('child_process'), router = express.Router();
+router.get('/', async (req, res) => {
+try { const [cpu, mem, disk, pm2] = await Promise.all([si.currentLoad(), si.mem(), si.fsSize(), new Promise(res => exec('pm2 jlist', (e,o)=>res(JSON.parse(o||'[]'))))]);
+res.json({ cpu: { usage: Math.round(cpu.currentLoad), cores: cpu.cpus?.length || 1 }, memory: { total: mem.total, used: mem.used, percent: Math.round((mem.used/mem.total)*100) }, swap: { total: mem.swaptotal, used: mem.swapused, percent: mem.swaptotal>0?Math.round((mem.swapused/mem.swaptotal)*100):0 }, disk: disk.filter(d=>d.mount==='/').map(d=>({ fs:d.fs, mount:d.mount, used:d.used, percent:Math.round(d.use) })), processes: pm2.map(p=>({ name:p.name, status:p.pm2_env?.status, cpu:p.monit?.cpu, memory:p.monit?.memory, restarts:p.pm2_env?.restart_time })) });
+} catch (e) { res.status(500).json({ error: e.message }) } }); module.exports = router;

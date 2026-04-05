@@ -1,0 +1,17 @@
+{
+  "name": "kosh-webhooks",
+  "version": "1.0.0",
+  "description": "Kosh — Webhooks de receita (Asaas + Inter)",
+  "main": "index.js",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "start": "node index.js",
+    "dev":   "node --watch index.js"
+  },
+  "dependencies": {
+    "express":     "^4.19.2",
+    "pg":          "^8.12.0",
+    "ioredis":     "^5.3.2",
+    "node-fetch":  "2.7.0"
+  }
+}

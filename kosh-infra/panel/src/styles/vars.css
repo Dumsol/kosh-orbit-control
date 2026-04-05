@@ -1,0 +1,41 @@
+:root {
+  /* Grayscale / Backgrounds - WHITE & CLEAN */
+  --bg-0: #ffffff;
+  --bg-1: #f8f9fa;
+  --bg-2: #eff0f2;
+  --bg-3: #e4e4e7;
+
+  /* Text - CLEAN DARK */
+  --text-1: #18181b;
+  --text-2: #52525b;
+  --text-3: #71717a;
+  --text-4: #a1a1aa;
+
+  /* Brand / Copper */
+  --copper: #b87333;
+  --copper-light: #d19256;
+  --copper-dark: #8c5524;
+  --copper-border: rgba(184, 115, 51, 0.35);
+  --copper-glow: rgba(184, 115, 51, 0.08);
+
+  /* Semantic */
+  --success: #16a34a;
+  --danger: #dc2626;
+  --warning: #d97706;
+  --info: #2563eb;
+
+  /* Borders / UI */
+  --border-subtle: rgba(0, 0, 0, 0.06);
+  --border-mid: rgba(0, 0, 0, 0.12);
+  --white: #ffffff;
+  --black: #000000;
+
+  /* Terminal Overrides (Dark for Logs) */
+  --terminal-bg: #09090b;
+  --terminal-text: #ececed;
+
+  /* Radius */
+  --r-sm: 4px;
+  --r-md: 8px;
+  --r-lg: 12px;
+}

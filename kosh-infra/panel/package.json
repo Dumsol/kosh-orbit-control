@@ -1,0 +1,35 @@
+{
+  "name": "kosh-panel",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@codemirror/lang-sql": "^6.0.1",
+    "@codemirror/theme-one-dark": "^6.1.2",
+    "@codemirror/view": "^6.26.3",
+    "@vueuse/core": "^10.9.0",
+    "axios": "^1.6.8",
+    "chart.js": "^4.4.2",
+    "codemirror": "^6.0.2",
+    "date-fns": "^3.6.0",
+    "lucide-vue-next": "^0.368.0",
+    "pinia": "^2.1.7",
+    "vue": "^3.4.21",
+    "vue-chartjs": "^5.3.0",
+    "vue-router": "^4.3.0"
+  },
+  "devDependencies": {
+    "@tsconfig/node20": "^20.1.4",
+    "@types/node": "^20.12.5",
+    "@vitejs/plugin-vue": "^5.0.4",
+    "@vue/tsconfig": "^0.5.1",
+    "typescript": "^5.4.4",
+    "vite": "^5.2.8",
+    "vue-tsc": "^2.0.11"
+  }
+}

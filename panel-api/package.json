@@ -1,0 +1,20 @@
+{
+  "name": "panel-api",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "helmet": "^7.1.0",
+    "ws": "^8.16.0",
+    "node-pty": "^1.0.0",
+    "systeminformation": "^5.21.22",
+    "pg": "^8.11.3",
+    "ioredis": "^5.3.2",
+    "dotenv": "^16.4.5",
+    "node-fetch": "^2.7.0"
+  }
+}
