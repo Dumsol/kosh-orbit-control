@@ -21,6 +21,10 @@
         "run": { "serviceId": "peppermint", "region": "southamerica-east1" }
       },
       {
+        "source": "/crm-app/**",
+        "run": { "serviceId": "suitecrm", "region": "southamerica-east1" }
+      },
+      {
         "source": "/integrations/**",
         "run": { "serviceId": "integration-bus", "region": "southamerica-east1" }
       },

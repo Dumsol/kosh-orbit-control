@@ -33,6 +33,7 @@ router.get('/', async (req, res) => {
   const services = [
     { name: 'ingest-api', url: `${publicUrl}/ingest/health` },
     { name: 'webhooks', url: `${publicUrl}/webhooks/health` },
+    { name: 'suitecrm', url: `${process.env.SUITECRM_PUBLIC_URL || `${publicUrl}/crm-app/`}` },
   ]
 
   r.cloudRun = {}
